@@ -101,9 +101,9 @@ def main():
     while True:
         try:
             if not check_tokens():
-                logger.critical(f'Отсутствует обязательная переменная '
-                                f'окружения: !!!. Программа принудительно '
-                                f'остановлена.')
+                logger.critical('Отсутствует обязательная переменная '
+                                'окружения. Программа принудительно '
+                                'остановлена.')
                 exit()
             response = get_api_answer(current_timestamp - RETRY_TIME)
             if len(response['homeworks']) == 0:
