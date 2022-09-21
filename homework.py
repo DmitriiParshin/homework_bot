@@ -114,8 +114,9 @@ def check_tokens():
     else:
         for token in TOKENS:
             if token[1] is None:
-                logger.critical(f'Отсутствует обязательная переменная окружения: '
-                                f'{token[0]}. Программа принудительно остановлена.'
+                logger.critical(f'Отсутствует обязательная переменная '
+                                f'окружения: {token[0]}. Программа '
+                                f'принудительно остановлена.'
                                 )
                 return False
 
