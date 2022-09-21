@@ -2,9 +2,13 @@ class StatusCodeNot200(Exception):
     pass
 
 
-class EndpointConnectionError(Exception):
+class EmptyResponseFromApi(Exception):
     pass
 
 
 class StatusNotChanged(Exception):
+    pass
+
+
+class NoneTokenError(Exception):
     pass
