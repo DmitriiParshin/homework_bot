@@ -52,7 +52,7 @@ def send_message(bot, message):
     """Отправляет сообщение в Telegram."""
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
-        logger.info(f'Бот начал отправку сообщения в Телеграм')
+        logger.info('Бот начал отправку сообщения в Телеграм')
     except telegram.error.TelegramError as error:
         logger.error(f'Сообщение - {message} - отправить не удалось, {error}')
         return False
@@ -84,7 +84,7 @@ def get_api_answer(current_timestamp):
 
 def check_response(response):
     """Проверяет ответ API на корректность."""
-    logger.info(f'Проверяем ответ API')
+    logger.info('Проверяем ответ API')
     if not isinstance(response, dict):
         raise TypeError
     elif 'homeworks' not in response or 'current_date' not in response:
@@ -145,7 +145,7 @@ def main():
             else:
                 logger.info('Нет новых статусов')
         except EmptyResponseFromApi as error:
-            logger.info(f'Получили пустой ответ от API', error)
+            logger.info('Получили пустой ответ от API', error)
         except Exception as error:
             current_report['message'] = f'Сбой в работе программы: {error}'
             if current_report != prev_report:
