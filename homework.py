@@ -85,7 +85,8 @@ def check_response(response):
         raise EmptyResponseFromApi('Ответ от API - пустой!')
     homeworks = response.get('homeworks')
     if not isinstance(homeworks, list):
-        raise TypeError('Ошибка типа домашних работ')
+        raise KeyError('В ответе API под ключом "homeworks" оказался не '
+                       'список')
     return homeworks
 
 
@@ -93,7 +94,7 @@ def parse_status(homework):
     """Извлекает из информации о конкретной домашней работе её статус."""
     if 'homework_name' not in homework:
         raise KeyError('В ответе нет информации о статусе')
-    elif homework.get('status') not in VERDICTS:
+    if homework.get('status') not in VERDICTS:
         raise ValueError('Нет такого статуса проверки домашней работы!')
     return ('Изменился статус проверки работы "{homework_name}". '
             '{verdict}'.format(homework_name=homework.get('homework_name'),
@@ -140,7 +141,7 @@ def main():
                 if send_message(bot, current_report['message']):
                     prev_report = current_report.copy()
                     current_timestamp = response.get('current_date',
-                                                     int(time.time()))
+                                                     current_timestamp)
             else:
                 logger.info('Нет новых статусов')
         except EmptyResponseFromApi as error:
