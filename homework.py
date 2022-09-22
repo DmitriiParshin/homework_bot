@@ -16,12 +16,6 @@ PRACTICUM_TOKEN = os.getenv('PRACTICUM_TOKEN')
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
-TOKENS = (
-    ('PRACTICUM_TOKEN', PRACTICUM_TOKEN),
-    ('TELEGRAM_TOKEN', TELEGRAM_TOKEN),
-    ('TELEGRAM_CHAT_ID', TELEGRAM_CHAT_ID),
-)
-
 RETRY_TIME = 600
 ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
 HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
@@ -101,15 +95,20 @@ def parse_status(homework):
         raise KeyError('В ответе нет информации о статусе')
     elif homework.get('status') not in VERDICTS:
         raise ValueError('Нет такого статуса проверки домашней работы!')
-    return ('Изменился статус проверки домашней работы "{homework_name}". '
+    return ('Изменился статус проверки работы "{homework_name}". '
             '{verdict}'.format(homework_name=homework.get('homework_name'),
                                verdict=VERDICTS[homework.get('status')]))
 
 
 def check_tokens():
     """Проверяет доступность переменных окружения."""
+    tokens = (
+        ('PRACTICUM_TOKEN', PRACTICUM_TOKEN),
+        ('TELEGRAM_TOKEN', TELEGRAM_TOKEN),
+        ('TELEGRAM_CHAT_ID', TELEGRAM_CHAT_ID),
+    )
     check = True
-    for name, token in TOKENS:
+    for name, token in tokens:
         if token is None:
             logger.critical(f'Отсутствует обязательная переменная '
                             f'окружения: {name}. Программа '
