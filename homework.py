@@ -51,8 +51,8 @@ logger.addHandler(f_handler)
 def send_message(bot, message):
     """Отправляет сообщение в Telegram."""
     try:
+        logger.info(f'Бот начал отправку сообщения - {message} - в Телеграм')
         bot.send_message(TELEGRAM_CHAT_ID, message)
-        logger.info('Бот начал отправку сообщения в Телеграм')
     except telegram.error.TelegramError as error:
         logger.error(f'Сообщение - {message} - отправить не удалось, {error}')
         return False
@@ -86,39 +86,37 @@ def check_response(response):
     """Проверяет ответ API на корректность."""
     logger.info('Проверяем ответ API')
     if not isinstance(response, dict):
-        raise TypeError
+        raise TypeError('Ответ от API - не словарь!')
     elif 'homeworks' not in response or 'current_date' not in response:
-        raise EmptyResponseFromApi
+        raise EmptyResponseFromApi('Ответ от API - пустой!')
     homeworks = response.get('homeworks')
     if not isinstance(homeworks, list):
-        raise TypeError
+        raise TypeError('Ошибка типа домашних работ')
     return homeworks
 
 
 def parse_status(homework):
     """Извлекает из информации о конкретной домашней работе её статус."""
     if 'homework_name' not in homework:
-        message = 'В ответе нет информации о статусе'
-        logger.error(message)
-        raise KeyError(message)
-    else:
-        return ('Изменился статус проверки работы "{homework_name}". '
-                '{verdict}'.format(homework_name=homework.get('homework_name'),
-                                   verdict=VERDICTS[homework.get('status')]))
+        raise KeyError('В ответе нет информации о статусе')
+    elif homework.get('status') not in VERDICTS:
+        raise ValueError('Нет такого статуса проверки домашней работы!')
+    return ('Изменился статус проверки домашней работы "{homework_name}". '
+            '{verdict}'.format(homework_name=homework.get('homework_name'),
+                               verdict=VERDICTS[homework.get('status')]))
 
 
 def check_tokens():
     """Проверяет доступность переменных окружения."""
-    if all([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID]):
-        return True
-    else:
-        for token in TOKENS:
-            if token[1] is None:
-                logger.critical(f'Отсутствует обязательная переменная '
-                                f'окружения: {token[0]}. Программа '
-                                f'принудительно остановлена.'
-                                )
-                return False
+    check = True
+    for name, token in TOKENS:
+        if token is None:
+            logger.critical(f'Отсутствует обязательная переменная '
+                            f'окружения: {name}. Программа '
+                            f'принудительно остановлена.'
+                            )
+            check = False
+    return check
 
 
 def main():
@@ -134,16 +132,16 @@ def main():
             homeworks = check_response(response)
             if homeworks:
                 homework = check_response(response)[0]
-                current_timestamp = int(time.time())
                 verdict = parse_status(homework)
                 current_report['name'] = homework.get('homework_name')
                 current_report['message'] = verdict
             else:
                 current_report['message'] = 'Нет новых статусов'
             if current_report != prev_report:
-                send_message(bot, current_report['message'])
-                prev_report = current_report.copy()
-                current_timestamp = response.get('current_date')
+                if send_message(bot, current_report['message']):
+                    prev_report = current_report.copy()
+                    current_timestamp = response.get('current_date',
+                                                     int(time.time()))
             else:
                 logger.info('Нет новых статусов')
         except EmptyResponseFromApi as error:
@@ -153,8 +151,6 @@ def main():
             if current_report != prev_report:
                 send_message(bot, current_report['message'])
                 prev_report = current_report.copy()
-            else:
-                logger.info('Нет новых статусов')
         finally:
             time.sleep(RETRY_TIME)
 
